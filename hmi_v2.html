@@ -39,7 +39,6 @@ html, body {
   background: radial-gradient(ellipse 130% 90% at 50% 20%, #0c1520 0%, #0a0f14 100%);
   font-family: 'IBM Plex Sans', sans-serif;
   color: var(--text-p);
-  overflow: hidden;
 }
 
 /* ===== SCANLINE OVERLAY ===== */
@@ -62,7 +61,7 @@ body::after {
   display: grid;
   grid-template-rows: 52px 1fr;
   grid-template-columns: 184px 1fr 194px;
-  height: 100vh;
+  min-height: 100vh;
   gap: 0;
 }
 
@@ -797,6 +796,79 @@ header::before {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border2), transparent);
   margin: 0;
+}
+
+/* ===== RESPONSIVE / SCROLLABLE ===== */
+
+/* Desktop: allow overflow-scroll if window is shorter than content */
+.main { overflow: visible; }
+.conveyor-section { overflow: visible; height: auto; }
+.left-panel, .right-panel { overflow-y: auto; }
+
+/* Mobile: stack panels vertically, full-width scrolling */
+@media (max-width: 800px) {
+  html, body { height: auto; }
+
+  .hmi {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    height: auto;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 52px;
+    padding: 8px 14px;
+    gap: 10px;
+    row-gap: 6px;
+  }
+
+  .hdr-spacer { display: none; }
+
+  .left-panel {
+    overflow: visible;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .left-panel .panel-section { border-bottom: 1px solid var(--border); }
+
+  .main {
+    overflow: visible;
+    height: auto;
+  }
+
+  .wm-strip {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+
+  .conveyor-section { padding: 10px 12px 8px; }
+
+  .belt-row { overflow: visible; }
+
+  .units-row { flex-wrap: wrap; }
+
+  .scale-group { flex-wrap: wrap; }
+
+  .bottom-section { flex-direction: column; }
+
+  .sensor-mini { grid-template-columns: repeat(4, 1fr); }
+
+  .right-panel {
+    overflow: visible;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
 }
 </style>
 </head>
