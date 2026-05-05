@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting System HMI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg:        #0a0f14;
+  --surface:   #0e1621;
+  --surface2:  #111d2b;
+  --surface3:  #142030;
+  --border:    rgba(0,180,220,0.12);
+  --border2:   rgba(0,180,220,0.22);
+  --cyan:      #00d4e8;
+  --cyan2:     #00aacc;
+  --green:     #18e898;
+  --green2:    #0abf78;
+  --pink:      #ff3d7f;
+  --yellow:    #f0c040;
+  --orange:    #ff7a30;
+  --blue-mid:  #1a8ccf;
+  --red:       #e84040;
+  --text-p:    #c8dae6;
+  --text-s:    #6a8fa8;
+  --text-d:    #3a5a72;
+  --wm-top:    #1b5c9a;
+  --wm-face:   #1468b0;
+  --wm-side:   #0d3d6e;
+  --wm-bottom: #0a2d52;
+  --slot-g:    #00e070;
+  --slot-p:    #ff3080;
+  --slot-c:    #00c8e0;
+  --slot-o:    #ff8000;
+  --slot-y:    #e0c000;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--text-p);
+  overflow: hidden;
+}
+
+/* ===== SCANLINE OVERLAY ===== */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.06) 3px,
+    rgba(0,0,0,0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ===== LAYOUT ===== */
+.hmi {
+  display: grid;
+  grid-template-rows: 48px 1fr;
+  grid-template-columns: 180px 1fr 190px;
+  height: 100vh;
+  gap: 0;
+}
+
+/* ===== HEADER ===== */
+header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border2);
+  gap: 24px;
+}
+.hdr-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-hex {
+  width: 22px; height: 22px;
+  background: var(--cyan);
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  opacity: 0.9;
+}
+.hdr-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.hdr-sep { width: 1px; height: 24px; background: var(--border2); }
+.hdr-tag {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-s);
+}
+.hdr-spacer { flex: 1; }
+.hdr-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.pill-run {
+  background: rgba(24,232,152,0.08);
+  border: 1px solid rgba(24,232,152,0.3);
+  color: var(--green);
+}
+.pill-warn {
+  background: rgba(240,192,64,0.08);
+  border: 1px solid rgba(240,192,64,0.3);
+  color: var(--yellow);
+}
+.pill-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+.dot-g { background: var(--green); }
+.dot-y { background: var(--yellow); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.hdr-clock {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--text-s);
+}
+
+/* ===== LEFT PANEL ===== */
+.left-panel {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.left-panel::-webkit-scrollbar { display: none; }
+
+.panel-section {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.section-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--cyan2);
+  margin-bottom: 10px;
+}
+.kv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 11px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.kv:last-child { border-bottom: none; }
+.kv-key { color: var(--text-s); }
+.kv-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+}
+.v-g { color: var(--green); }
+.v-y { color: var(--yellow); }
+.v-c { color: var(--cyan); }
+.v-r { color: var(--red); }
+.v-p { color: var(--pink); }
+
+.led-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.led {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.led-g { background: var(--green); box-shadow: 0 0 5px var(--green); }
+.led-y { background: var(--yellow); }
+.led-r { background: var(--red); box-shadow: 0 0 5px var(--red); animation: pulse 0.8s step-start infinite; }
+.led-off { background: #1c3348; }
+.led-c { background: var(--cyan); }
+
+/* ===== MAIN AREA ===== */
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ===== WM STRIP ===== */
+.wm-strip {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px 0;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.wm-strip::-webkit-scrollbar { display: none; }
+
+/* ===== WEIGHING MODULE (3D CSS) ===== */
+.wm-wrap {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.wm-wrap:hover .wm-body { filter: brightness(1.15); }
+
+/* Chute status above WM */
+.chute-flags {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 118px;
+}
+.chute-flag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  color: var(--text-d);
+  padding: 0 2px;
+}
+.chute-flag span:last-child {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #1c3348;
+}
+.chute-flag.active span:last-child {
+  background: var(--green);
+  box-shadow: 0 0 4px var(--green);
+}
+
+/* WM request dot */
+.wm-req-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 118px;
+  gap: 4px;
+  font-size: 9px;
+  color: var(--text-d);
+}
+
+/* 3D box using CSS transforms */
+.wm-3d {
+  width: 118px;
+  height: 92px;
+  position: relative;
+  perspective: 600px;
+  margin-bottom: 2px;
+}
+.wm-body {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  transform: rotateX(8deg) rotateY(-6deg);
+  transition: transform 0.3s;
+}
+.wm-wrap:hover .wm-body {
+  transform: rotateX(6deg) rotateY(-4deg);
+}
+
+/* Faces */
+.wm-face {
+  position: absolute;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+/* Front */
+.wm-front {
+  width: 100px; height: 80px;
+  left: 12px; top: 6px;
+  background: linear-gradient(160deg, #1c6ab8 0%, #1055a0 60%, #0c428a 100%);
+  border-radius: 4px 4px 6px 6px;
+}
+/* Top */
+.wm-top {
+  width: 100px; height: 18px;
+  left: 12px; top: -12px;
+  background: linear-gradient(180deg, #2278cc 0%, #1a6ab8 100%);
+  transform: rotateX(-90deg);
+  transform-origin: bottom center;
+  border-radius: 4px 4px 0 0;
+}
+/* Side-right */
+.wm-right {
+  width: 18px; height: 80px;
+  left: 112px; top: 6px;
+  background: linear-gradient(90deg, #0d4a86 0%, #0a3a6e 100%);
+  transform: rotateY(90deg);
+  transform-origin: left center;
+  border-radius: 0 4px 4px 0;
+}
+/* Inner screen area */
+.wm-screen {
+  position: absolute;
+  left: 10px; top: 8px;
+  width: 80px; height: 50px;
+  background: #040e1a;
+  border-radius: 3px;
+  border: 1px solid rgba(0,180,220,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  overflow: hidden;
+}
+.wm-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,180,220,0.03) 2px,
+    rgba(0,180,220,0.03) 3px
+  );
+}
+/* Slot tiles inside screen */
+.wm-slot {
+  width: 26px; height: 36px;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.wm-slot-sub {
+  font-size: 8px;
+  color: rgba(0,0,0,0.5);
+  line-height: 1;
+  margin-top: 1px;
+}
+.slot-g  { background: #00e876; box-shadow: 0 0 8px rgba(0,232,118,0.4), 0 2px 4px rgba(0,0,0,0.4); }
+.slot-p  { background: #ff2c7a; box-shadow: 0 0 8px rgba(255,44,122,0.4), 0 2px 4px rgba(0,0,0,0.4); }
+.slot-c  { background: #00c8e8; box-shadow: 0 0 8px rgba(0,200,232,0.4), 0 2px 4px rgba(0,0,0,0.4); }
+.slot-o  { background: #ff8020; box-shadow: 0 0 8px rgba(255,128,32,0.4), 0 2px 4px rgba(0,0,0,0.4); }
+
+/* WM label bar at bottom of front face */
+.wm-label-bar {
+  position: absolute;
+  bottom: 8px; left: 10px; right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.wm-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 1px;
+}
+.wm-mini-ctrl {
+  width: 14px; height: 5px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 1px;
+}
+
+/* ===== CONVEYOR SECTION ===== */
+.conveyor-section {
+  flex: 1;
+  padding: 12px 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+/* Main top belt with nodes */
+.belt-row {
+  position: relative;
+  height: 44px;
+  flex-shrink: 0;
+}
+.belt-track {
+  position: absolute;
+  top: 16px; left: 0; right: 0;
+  height: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.belt-inner {
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 8px,
+    rgba(0,180,220,0.08) 8px,
+    rgba(0,180,220,0.08) 10px
+  );
+  animation: belt 1.2s linear infinite;
+}
+@keyframes belt { to { background-position: 10px 0; } }
+
+.belt-node {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  width: 34px; height: 34px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7.5px;
+  font-weight: 600;
+  color: var(--text-s);
+  text-align: center;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  z-index: 2;
+}
+.belt-node:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0,180,220,0.08);
+}
+.belt-node.on {
+  border-color: var(--green2);
+  color: var(--green);
+  background: rgba(24,232,152,0.06);
+}
+
+/* ===== PROCESS UNITS ROW ===== */
+.units-row {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.unit {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 7px 9px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  min-width: 70px;
+}
+.unit:hover { border-color: var(--border2); }
+.unit.on { border-color: rgba(24,232,152,0.3); background: rgba(24,232,152,0.04); }
+.unit-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-p);
+  margin-bottom: 5px;
+  letter-spacing: 0.5px;
+}
+.unit-slots { display: flex; gap: 3px; }
+.u-slot {
+  width: 22px; height: 18px;
+  border-radius: 2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+}
+.unit-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 16px;
+  color: var(--cyan);
+}
+
+/* ===== BC201 + LSG ===== */
+.bottom-section {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.bc201-block {
+  background: var(--surface2);
+  border: 1px solid rgba(24,200,100,0.2);
+  border-radius: 5px;
+  padding: 9px 12px;
+  min-width: 220px;
+}
+.bc201-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #6fc;
+  margin-bottom: 6px;
+}
+.bc201-belt {
+  height: 10px;
+  background: linear-gradient(90deg, #1a5a28, #1e6a30);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid rgba(100,255,150,0.15);
+}
+.bc201-belt-inner {
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent 6px,
+    rgba(100,255,150,0.12) 6px,
+    rgba(100,255,150,0.12) 8px
+  );
+  animation: belt 0.8s linear infinite;
+}
+.lsg-label {
+  font-size: 9px;
+  color: #4a9a68;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.lsg-row { display: flex; gap: 7px; }
+.lsg-item { text-align: center; }
+.lsg-slot {
+  width: 28px; height: 22px;
+  border-radius: 2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  margin-bottom: 2px;
+}
+.lsg-name { font-size: 8px; color: var(--text-d); }
+
+/* Sensor mini-grid */
+.sensor-mini {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+}
+.srs-mini {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 5px 6px;
+}
+.srs-mini-name { font-size: 8px; font-weight: 600; color: var(--text-s); margin-bottom: 2px; }
+.srs-mini-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--cyan);
+}
+
+/* Scale readouts */
+.scale-group {
+  display: flex;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.scale-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 7px 10px;
+  min-width: 90px;
+}
+.scale-card-title {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-d);
+  margin-bottom: 4px;
+}
+.scale-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--yellow);
+}
+.scale-unit { font-size: 10px; color: var(--text-s); }
+
+/* ===== RIGHT PANEL ===== */
+.right-panel {
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.right-panel::-webkit-scrollbar { display: none; }
+
+.ctrl-btn {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  margin-bottom: 6px;
+  border-radius: 3px;
+  border: 1px solid;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.btn-s { background: rgba(24,232,152,0.06); border-color: rgba(24,232,152,0.3); color: var(--green); }
+.btn-s:hover { background: rgba(24,232,152,0.12); }
+.btn-p { background: rgba(240,192,64,0.06); border-color: rgba(240,192,64,0.3); color: var(--yellow); }
+.btn-p:hover { background: rgba(240,192,64,0.12); }
+.btn-e { background: rgba(232,64,64,0.06); border-color: rgba(232,64,64,0.35); color: var(--red); }
+.btn-e:hover { background: rgba(232,64,64,0.14); }
+.btn-r { background: rgba(0,180,220,0.05); border-color: rgba(0,180,220,0.2); color: var(--cyan2); }
+.btn-r:hover { background: rgba(0,180,220,0.10); }
+
+/* Alarm log */
+.alarm {
+  display: flex;
+  gap: 7px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 10px;
+}
+.alarm:last-child { border-bottom: none; }
+.alarm-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+.ad-ok { background: var(--green); }
+.ad-w  { background: var(--yellow); }
+.ad-e  { background: var(--red); animation: pulse 0.7s step-start infinite; }
+.alarm-msg { color: var(--text-s); line-height: 1.45; flex: 1; }
+.alarm-time { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-d); white-space: nowrap; }
+
+/* stat cards in right panel */
+.stat-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 6px 8px;
+}
+.stat-label { font-size: 8px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-d); margin-bottom: 2px; }
+.stat-val { font-family: 'Share Tech Mono', monospace; font-size: 17px; }
+
+/* Throughput sparkline */
+.sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 24px;
+  margin-top: 8px;
+}
+.spark-bar {
+  flex: 1;
+  background: rgba(0,180,220,0.25);
+  border-radius: 1px 1px 0 0;
+  transition: height 1s;
+}
+
+/* Divider line in panel */
+.panel-div {
+  height: 1px;
+  background: var(--border);
+  margin: 0;
+}
+</style>
+</head>
+<body>
+
+<div class="hmi">
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="hdr-logo">
+    <div class="logo-hex"></div>
+    <span class="hdr-title">SortFlex HMI</span>
+  </div>
+  <div class="hdr-sep"></div>
+  <span class="hdr-tag">Line A · Station 01</span>
+  <div class="hdr-spacer"></div>
+  <div class="hdr-pill pill-run">
+    <div class="pill-dot dot-g"></div>
+    Running
+  </div>
+  <div class="hdr-pill pill-warn">
+    <div class="pill-dot dot-y"></div>
+    1 Warning
+  </div>
+  <div class="hdr-sep"></div>
+  <span class="hdr-clock" id="clock">--:--:--</span>
+</header>
+
+<!-- ── LEFT PANEL ── -->
+<aside class="left-panel">
+  <div class="panel-section">
+    <div class="section-title">System</div>
+    <div class="kv"><span class="kv-key">Mode</span><span class="kv-val v-g">AUTO</span></div>
+    <div class="kv"><span class="kv-key">Cycle</span><span class="kv-val v-c">ACTIVE</span></div>
+    <div class="kv"><span class="kv-key">Belt speed</span><span class="kv-val v-c">1.20 m/s</span></div>
+    <div class="kv"><span class="kv-key">Throughput</span><span class="kv-val v-g">94.3%</span></div>
+    <div class="kv"><span class="kv-key">Reject rate</span><span class="kv-val v-y">1.8%</span></div>
+    <div class="kv"><span class="kv-key">Uptime</span><span class="kv-val v-g">98.1%</span></div>
+  </div>
+  <div class="panel-section">
+    <div class="section-title">Chute States</div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>OU1</span><span class="kv-val v-g">UP</span></div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>OU2</span><span class="kv-val v-g">UP</span></div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>OU3</span><span class="kv-val v-g">UP</span></div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>OU4</span><span class="kv-val v-g">UP</span></div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>OU5</span><span class="kv-val v-g">UP</span></div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>OU6</span><span class="kv-val v-g">UP</span></div>
+  </div>
+  <div class="panel-section">
+    <div class="section-title">Virtual</div>
+    <div class="kv"><span class="kv-key">VIRT1</span><span class="kv-val v-c">PASS</span></div>
+    <div class="kv"><span class="kv-key">VIRT2</span><span class="kv-val v-c">PASS</span></div>
+    <div class="kv"><span class="kv-key">VIRT3</span><span class="kv-val v-c">PASS</span></div>
+  </div>
+  <div class="panel-section">
+    <div class="section-title">HP Lines</div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>HP1</span><span class="kv-val v-g">ACTIVE</span></div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>HP2</span><span class="kv-val v-g">ACTIVE</span></div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-y"></span>HP3</span><span class="kv-val v-y">WAIT</span></div>
+    <div class="kv"><span class="kv-key led-row"><span class="led led-g"></span>DS1</span><span class="kv-val v-g">OK</span></div>
+  </div>
+  <div class="panel-section">
+    <div class="section-title">Divert Points</div>
+    <div class="kv"><span class="kv-key">SL01</span><span class="kv-val v-c">1</span></div>
+    <div class="kv"><span class="kv-key">SL02</span><span class="kv-val v-c">0</span></div>
+    <div class="kv"><span class="kv-key">OC17</span><span class="kv-val">IDLE</span></div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- WEIGHING MODULE STRIP -->
+  <div class="wm-strip" id="wm-strip">
+    <!-- WM1 -->
+    <div class="wm-wrap" onclick="selectWM(1)">
+      <div class="chute-flags">
+        <div class="chute-flag"><span>OU1 moves down</span><span></span></div>
+        <div class="chute-flag active"><span>OU1 is up</span><span></span></div>
+        <div class="chute-flag"><span>OU1 is down</span><span></span></div>
+      </div>
+      <div class="wm-req-row">WM1 request <span class="led led-off"></span></div>
+      <div class="wm-3d">
+        <div class="wm-body">
+          <div class="wm-face wm-top"></div>
+          <div class="wm-face wm-right"></div>
+          <div class="wm-face wm-front">
+            <div class="wm-screen">
+              <div class="wm-slot slot-g">3<div class="wm-slot-sub">1</div></div>
+              <div class="wm-slot slot-g">3<div class="wm-slot-sub">1</div></div>
+            </div>
+            <div class="wm-label-bar">
+              <span class="wm-name">WM1</span>
+              <span class="wm-mini-ctrl"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- WM2 -->
+    <div class="wm-wrap" onclick="selectWM(2)">
+      <div class="chute-flags">
+        <div class="chute-flag"><span>OU2 moves down</span><span></span></div>
+        <div class="chute-flag active"><span>OU2 is up</span><span></span></div>
+        <div class="chute-flag"><span>OU2 is down</span><span></span></div>
+      </div>
+      <div class="wm-req-row">WM2 request <span class="led led-off"></span></div>
+      <div class="wm-3d">
+        <div class="wm-body">
+          <div class="wm-face wm-top"></div>
+          <div class="wm-face wm-right"></div>
+          <div class="wm-face wm-front">
+            <div class="wm-screen">
+              <div class="wm-slot slot-p">7<div class="wm-slot-sub">1</div></div>
+              <div class="wm-slot slot-p">7<div class="wm-slot-sub">1</div></div>
+            </div>
+            <div class="wm-label-bar">
+              <span class="wm-name">WM2</span>
+              <span class="wm-mini-ctrl"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- WM3 -->
+    <div class="wm-wrap" onclick="selectWM(3)">
+      <div class="chute-flags">
+        <div class="chute-flag"><span>OU3 moves down</span><span></span></div>
+        <div class="chute-flag active"><span>OU3 is up</span><span></span></div>
+        <div class="chute-flag"><span>OU3 is down</span><span></span></div>
+      </div>
+      <div class="wm-req-row">WM3 request <span class="led led-off"></span></div>
+      <div class="wm-3d">
+        <div class="wm-body">
+          <div class="wm-face wm-top"></div>
+          <div class="wm-face wm-right"></div>
+          <div class="wm-face wm-front">
+            <div class="wm-screen">
+              <div class="wm-slot slot-c">3<div class="wm-slot-sub">1</div></div>
+              <div class="wm-slot slot-c">3<div class="wm-slot-sub">1</div></div>
+            </div>
+            <div class="wm-label-bar">
+              <span class="wm-name">WM3</span>
+              <span class="wm-mini-ctrl"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- WM4 -->
+    <div class="wm-wrap" onclick="selectWM(4)">
+      <div class="chute-flags">
+        <div class="chute-flag"><span>OU4 moves down</span><span></span></div>
+        <div class="chute-flag active"><span>OU4 is up</span><span></span></div>
+        <div class="chute-flag"><span>OU4 is down</span><span></span></div>
+      </div>
+      <div class="wm-req-row">WM4 request <span class="led led-off"></span></div>
+      <div class="wm-3d">
+        <div class="wm-body">
+          <div class="wm-face wm-top"></div>
+          <div class="wm-face wm-right"></div>
+          <div class="wm-face wm-front">
+            <div class="wm-screen">
+              <div class="wm-slot slot-p">3<div class="wm-slot-sub">1</div></div>
+              <div class="wm-slot slot-p">3<div class="wm-slot-sub">1</div></div>
+            </div>
+            <div class="wm-label-bar">
+              <span class="wm-name">WM4</span>
+              <span class="wm-mini-ctrl"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- WM5 -->
+    <div class="wm-wrap" onclick="selectWM(5)">
+      <div class="chute-flags">
+        <div class="chute-flag"><span>OU5 moves down</span><span></span></div>
+        <div class="chute-flag active"><span>OU5 is up</span><span></span></div>
+        <div class="chute-flag"><span>OU5 is down</span><span></span></div>
+      </div>
+      <div class="wm-req-row">WM5 request <span class="led led-off"></span></div>
+      <div class="wm-3d">
+        <div class="wm-body">
+          <div class="wm-face wm-top"></div>
+          <div class="wm-face wm-right"></div>
+          <div class="wm-face wm-front">
+            <div class="wm-screen">
+              <div class="wm-slot slot-c">3<div class="wm-slot-sub">1</div></div>
+              <div class="wm-slot slot-c">3<div class="wm-slot-sub">1</div></div>
+            </div>
+            <div class="wm-label-bar">
+              <span class="wm-name">WM5</span>
+              <span class="wm-mini-ctrl"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- WM6 -->
+    <div class="wm-wrap" onclick="selectWM(6)">
+      <div class="chute-flags">
+        <div class="chute-flag"><span>OU6 moves down</span><span></span></div>
+        <div class="chute-flag active"><span>OU6 is up</span><span></span></div>
+        <div class="chute-flag"><span>OU6 is down</span><span></span></div>
+      </div>
+      <div class="wm-req-row">WM6 request <span class="led led-off"></span></div>
+      <div class="wm-3d">
+        <div class="wm-body">
+          <div class="wm-face wm-top"></div>
+          <div class="wm-face wm-right"></div>
+          <div class="wm-face wm-front">
+            <div class="wm-screen">
+              <div class="wm-slot slot-g">3<div class="wm-slot-sub">1</div></div>
+              <div class="wm-slot slot-p">3<div class="wm-slot-sub">1</div></div>
+            </div>
+            <div class="wm-label-bar">
+              <span class="wm-name">WM6</span>
+              <span class="wm-mini-ctrl"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /wm-strip -->
+
+  <!-- CONVEYOR SECTION -->
+  <div class="conveyor-section">
+
+    <!-- MAIN BELT LINE -->
+    <div class="belt-row">
+      <div class="belt-track"><div class="belt-inner"></div></div>
+      <div class="belt-node on"  style="left:4%">SRS1</div>
+      <div class="belt-node on"  style="left:13%">OU1</div>
+      <div class="belt-node"     style="left:22%">SRS2</div>
+      <div class="belt-node on"  style="left:31%">OU2</div>
+      <div class="belt-node"     style="left:40%">SRS3</div>
+      <div class="belt-node on"  style="left:49%">OU3</div>
+      <div class="belt-node"     style="left:57%">SRS54</div>
+      <div class="belt-node on"  style="left:65%">OU4</div>
+      <div class="belt-node"     style="left:73%">SRS5</div>
+      <div class="belt-node on"  style="left:81%">OU5</div>
+      <div class="belt-node"     style="left:89%">SRS6</div>
+      <div class="belt-node on"  style="left:97%">OU6</div>
+    </div>
+
+    <!-- PROCESS UNITS -->
+    <div class="units-row">
+      <div class="unit on">
+        <div class="unit-title">OU1</div>
+        <div class="unit-slots">
+          <div class="u-slot slot-g">3</div>
+          <div class="u-slot slot-g">3</div>
+          <div class="u-slot slot-p">7</div>
+        </div>
+      </div>
+      <div class="unit">
+        <div class="unit-title">SRS1</div>
+        <div class="unit-val">3/0</div>
+      </div>
+      <div class="unit on">
+        <div class="unit-title">HP2</div>
+        <div style="font-size:10px; color:var(--green); font-weight:600;">ACTIVE</div>
+      </div>
+      <div class="unit on">
+        <div class="unit-title">OU2</div>
+        <div class="unit-slots">
+          <div class="u-slot slot-p">7</div>
+          <div class="u-slot slot-p">7</div>
+        </div>
+      </div>
+      <div class="unit on">
+        <div class="unit-title">SRS9</div>
+        <div class="unit-slots">
+          <div class="u-slot slot-g">3</div>
+          <div class="u-slot slot-g">3</div>
+          <div class="u-slot slot-c">6</div>
+        </div>
+      </div>
+      <div class="unit">
+        <div class="unit-title">VIRT2</div>
+        <div style="font-size:10px; color:var(--cyan); font-weight:500;">PASS</div>
+      </div>
+      <div class="unit">
+        <div class="unit-title">SL01</div>
+        <div class="unit-slots">
+          <div class="u-slot slot-c">6</div>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--cyan); margin-top:2px;">cnt: 1</div>
+      </div>
+      <div class="unit">
+        <div class="unit-title">SL02</div>
+        <div class="unit-val">0</div>
+      </div>
+    </div>
+
+    <!-- SCALE READOUTS -->
+    <div class="scale-group">
+      <div class="scale-card">
+        <div class="scale-card-title">HE1 — Scale</div>
+        <div class="scale-val" id="scale-he1">−1.2</div>
+        <div class="scale-unit">kg</div>
+      </div>
+      <div class="scale-card">
+        <div class="scale-card-title">HE2 — Gate</div>
+        <div style="display:flex; align-items:center; gap:7px; margin-top:3px;">
+          <div class="u-slot slot-g" style="width:26px; height:22px; font-size:12px;">9</div>
+          <span style="font-size:10px; color:var(--green); font-weight:600;">OPEN</span>
+        </div>
+      </div>
+      <div class="scale-card">
+        <div class="scale-card-title">DS1 — Downstream</div>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--green); margin-top:3px;">● ACTIVE</div>
+      </div>
+      <div class="scale-card">
+        <div class="scale-card-title">SRS7</div>
+        <div class="scale-val" style="font-size:20px; color:var(--cyan);">0</div>
+      </div>
+      <div class="scale-card">
+        <div class="scale-card-title">SRS8</div>
+        <div style="font-size:11px; color:var(--green); margin-top:3px;">OK</div>
+      </div>
+    </div>
+
+    <!-- BC201 + LSG + SENSOR GRID -->
+    <div class="bottom-section">
+      <div class="bc201-block">
+        <div class="bc201-title">BC201 — Feed Belt</div>
+        <div class="bc201-belt"><div class="bc201-belt-inner"></div></div>
+        <div class="lsg-label">LSG Chain ▶▶</div>
+        <div class="lsg-row">
+          <div class="lsg-item">
+            <div class="lsg-slot slot-c">2</div>
+            <div class="lsg-name">LSG1-1</div>
+          </div>
+          <div class="lsg-item">
+            <div class="lsg-slot slot-g">3</div>
+            <div class="lsg-name">LSG1-2</div>
+          </div>
+          <div class="lsg-item">
+            <div class="lsg-slot slot-p">7</div>
+            <div class="lsg-name">LSG1-3</div>
+          </div>
+          <div class="lsg-item">
+            <div class="lsg-slot slot-p">7</div>
+            <div class="lsg-name">LSG1-4</div>
+          </div>
+          <div class="lsg-item">
+            <div class="lsg-slot" style="background:#e83030; color:#fff;">8</div>
+            <div class="lsg-name">LSG1-5</div>
+          </div>
+        </div>
+      </div>
+      <div class="sensor-mini">
+        <div class="srs-mini"><div class="srs-mini-name">SRS1</div><div class="srs-mini-val">3/0</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS2</div><div class="srs-mini-val v-g">OK</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS3</div><div class="srs-mini-val v-g">OK</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS54</div><div class="srs-mini-val v-y" style="color:var(--yellow)">WT</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS5</div><div class="srs-mini-val v-g">OK</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS6</div><div class="srs-mini-val v-g">OK</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS7</div><div class="srs-mini-val">0</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS8</div><div class="srs-mini-val v-g">OK</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS9</div><div class="srs-mini-val v-g">OK</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">SRS16</div><div class="srs-mini-val v-g">OK</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">HP1</div><div class="srs-mini-val v-g">ACT</div></div>
+        <div class="srs-mini"><div class="srs-mini-name">OC17</div><div class="srs-mini-val" style="color:var(--text-s)">IDL</div></div>
+      </div>
+    </div>
+
+  </div><!-- /conveyor-section -->
+</main>
+
+<!-- ── RIGHT PANEL ── -->
+<aside class="right-panel">
+  <div class="panel-section">
+    <div class="section-title">Controls</div>
+    <button class="ctrl-btn btn-s">▶ Start</button>
+    <button class="ctrl-btn btn-p">⏸ Pause</button>
+    <button class="ctrl-btn btn-e">■ E-Stop</button>
+    <button class="ctrl-btn btn-r">↺ Reset</button>
+  </div>
+  <div class="panel-div"></div>
+  <div class="panel-section">
+    <div class="section-title">Shift Stats</div>
+    <div class="stat-mini">
+      <div class="stat-card">
+        <div class="stat-label">Processed</div>
+        <div class="stat-val v-g" id="count">4821</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rejected</div>
+        <div class="stat-val v-r">87</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg kg</div>
+        <div class="stat-val v-c">3.14</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Uptime</div>
+        <div class="stat-val v-g">98%</div>
+      </div>
+    </div>
+    <div class="sparkline" id="spark"></div>
+  </div>
+  <div class="panel-div"></div>
+  <div class="panel-section">
+    <div class="section-title">Alarm Log</div>
+    <div class="alarm">
+      <div class="alarm-dot ad-ok"></div>
+      <div class="alarm-msg">System nominal</div>
+      <div class="alarm-time">14:02</div>
+    </div>
+    <div class="alarm">
+      <div class="alarm-dot ad-w"></div>
+      <div class="alarm-msg">SRS54 timeout delay</div>
+      <div class="alarm-time">13:58</div>
+    </div>
+    <div class="alarm">
+      <div class="alarm-dot ad-ok"></div>
+      <div class="alarm-msg">HP3 cleared</div>
+      <div class="alarm-time">13:51</div>
+    </div>
+    <div class="alarm">
+      <div class="alarm-dot ad-ok"></div>
+      <div class="alarm-msg">WM2 recalibrated</div>
+      <div class="alarm-time">13:44</div>
+    </div>
+    <div class="alarm">
+      <div class="alarm-dot ad-e"></div>
+      <div class="alarm-msg">HE1 scale offset −1.2 kg</div>
+      <div class="alarm-time">13:39</div>
+    </div>
+    <div class="alarm">
+      <div class="alarm-dot ad-ok"></div>
+      <div class="alarm-msg">BC201 belt started</div>
+      <div class="alarm-time">08:00</div>
+    </div>
+  </div>
+</aside>
+
+</div><!-- /hmi -->
+
+<script>
+// Clock
+function tick() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    n.toLocaleTimeString('en-GB') + '  ' + n.toLocaleDateString('en-GB', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+tick(); setInterval(tick, 1000);
+
+// Scale jitter
+let s = -1.2;
+setInterval(() => {
+  s = Math.max(-2.0, Math.min(-0.5, s + (Math.random()-0.5)*0.06));
+  document.getElementById('scale-he1').textContent = s.toFixed(1);
+}, 900);
+
+// Count ticker
+let cnt = 4821;
+setInterval(() => {
+  cnt++;
+  document.getElementById('count').textContent = cnt.toLocaleString();
+}, 2800);
+
+// Sparkline
+const spark = document.getElementById('spark');
+const heights = [40,55,60,48,70,65,80,72,90,88,78,85,91,88,94];
+heights.forEach(h => {
+  const b = document.createElement('div');
+  b.className = 'spark-bar';
+  b.style.height = h + '%';
+  b.style.background = `rgba(0,${Math.round(150+h),220,${0.15 + h/200}})`;
+  b.style.background = h > 80
+    ? 'rgba(24,232,152,0.4)'
+    : h > 60
+    ? 'rgba(0,180,220,0.3)'
+    : 'rgba(0,130,180,0.2)';
+  spark.appendChild(b);
+});
+
+// WM selection highlight
+function selectWM(n) {
+  document.querySelectorAll('.wm-wrap').forEach((w,i) => {
+    w.style.outline = (i+1===n) ? '1px solid rgba(0,212,232,0.5)' : '';
+    w.style.borderRadius = '4px';
+  });
+}
+
+// Belt node click
+document.querySelectorAll('.belt-node').forEach(n => {
+  n.addEventListener('click', () => n.classList.toggle('on'));
+});
+</script>
+</body>
+</html>
