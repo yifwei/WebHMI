@@ -53,8 +53,13 @@ function Pipe({ x, y, w, h = 5, color = '#f4f6f6', vertical = false, className =
   );
 }
 
-function AirDuct({ className = '', style }) {
-  return <div className={`air-duct ${className}`} style={style} />;
+function AirDuct({ x, y, w, h, vertical = false, className = '' }) {
+  return (
+    <div
+      className={`air-duct ${vertical ? 'air-duct-vertical' : 'air-duct-horizontal'} ${className}`}
+      style={{ left: x, top: y, width: w, height: h }}
+    />
+  );
 }
 
 function Marker({ style, className = '' }) {
@@ -63,6 +68,20 @@ function Marker({ style, className = '' }) {
 
 function PipeTick({ style, vertical = false }) {
   return <span className={`pipe-tick ${vertical ? 'pipe-tick-vertical' : ''}`} style={style} />;
+}
+
+function ValveAssembly({ x, y, orientation = 'horizontal', actuator = 'square', size = 40, className = '' }) {
+  const valveName = orientation === 'vertical' ? 'vertical-valve-hp.svg' : 'horizontal-valve-hp.svg';
+
+  return (
+    <div
+      className={`valve-assembly valve-${orientation} actuator-${actuator} ${className}`}
+      style={{ left: x, top: y, width: size, height: size }}
+    >
+      <img src={asset(valveName)} alt="" aria-hidden="true" />
+      <span />
+    </div>
+  );
 }
 
 function Sensor({ label, style }) {
@@ -158,10 +177,10 @@ function Furnace() {
 function ValveCluster({ style }) {
   return (
     <div className="valve-cluster" style={style}>
-      <Symbol name="horizontal-valve-hp.svg" />
-      <Symbol name="horizontal-valve-hp.svg" />
-      <Symbol name="horizontal-valve-hp.svg" />
-      <Symbol name="horizontal-valve-hp.svg" />
+      <ValveAssembly x={0} y={0} actuator="square" size={38} />
+      <ValveAssembly x={88} y={0} actuator="square" size={38} />
+      <ValveAssembly x={176} y={0} actuator="semicircle" size={38} />
+      <ValveAssembly x={264} y={0} actuator="semicircle" size={38} />
     </div>
   );
 }
@@ -211,29 +230,24 @@ function App() {
           ]}
         />
 
-        <AirDuct className="supply-duct" style={{ left: 246, top: 198, width: 622, height: 36 }} />
-        <AirDuct className="left-return-duct" style={{ left: 61, top: 531, width: 370, height: 64 }} />
-        <AirDuct className="stack-duct" style={{ left: 914, top: 247, width: 150, height: 250 }} />
+        <AirDuct className="supply-duct" x={246} y={211} w={621} h={24} />
+        <AirDuct className="left-riser-duct" x={247} y={253} w={27} h={291} vertical />
+        <AirDuct className="left-return-duct" x={34} y={532} w={446} h={34} />
+        <AirDuct className="stack-duct" x={893} y={62} w={58} h={430} vertical />
+        <AirDuct className="ega-branch-duct" x={920} y={245} w={145} h={14} />
+        <AirDuct className="upper-fan-duct" x={823} y={87} w={74} h={9} />
 
-        <Pipe x={250} y={196} w={607} />
-        <Pipe x={274} y={230} w={586} />
-        <Pipe x={250} y={196} w={40} vertical />
-        <Pipe x={274} y={230} w={305} vertical />
-        <Pipe x={206} y={530} w={225} />
-        <Pipe x={59} y={530} w={149} />
-        <Pipe x={908} y={135} w={109} vertical />
-        <Pipe x={908} y={242} w={171} />
-        <Pipe x={908} y={250} w={158} vertical />
-        <Pipe x={858} y={343} w={205} />
-        <Pipe x={858} y={477} w={80} />
-        <Pipe x={912} y={477} w={238} vertical />
-        <Pipe x={842} y={641} w={325} />
-        <Pipe x={841} y={477} w={164} vertical />
-        <Pipe x={478} y={808} w={302} color="#eff967" />
-        <Pipe x={477} y={550} w={263} vertical color="#eff967" />
-        <Pipe x={453} y={550} w={306} vertical color="#d51916" className="hot-pipe" />
-        <Pipe x={101} y={914} w={355} color="#d51916" className="hot-pipe" />
-        <Pipe x={477} y={914} w={481} color="#eff967" />
+        <Pipe x={493} y={323} w={385} h={6} className="thin-pipe" />
+        <Pipe x={862} y={324} w={83} h={6} className="thin-pipe" />
+        <Pipe x={858} y={477} w={80} h={6} className="thin-pipe" />
+        <Pipe x={912} y={477} w={238} h={6} vertical className="thin-pipe" />
+        <Pipe x={842} y={641} w={325} h={7} className="thin-pipe" />
+        <Pipe x={841} y={477} w={164} h={7} vertical className="thin-pipe" />
+        <Pipe x={478} y={808} w={302} h={8} color="#eff967" className="utility-pipe" />
+        <Pipe x={477} y={550} w={263} h={8} vertical color="#eff967" className="utility-pipe" />
+        <Pipe x={453} y={550} w={306} h={8} vertical color="#d51916" className="utility-pipe hot-pipe" />
+        <Pipe x={101} y={914} w={355} h={8} color="#d51916" className="utility-pipe hot-pipe" />
+        <Pipe x={477} y={914} w={481} h={8} color="#eff967" className="utility-pipe" />
         <PipeTick style={{ left: 640, top: 810 }} />
         <PipeTick style={{ left: 735, top: 810 }} />
         <PipeTick style={{ left: 549, top: 916 }} />
@@ -272,7 +286,7 @@ function App() {
         <BlueText style={{ left: 921, top: 640 }}>80 &deg;C</BlueText>
         <BlueText style={{ left: 944, top: 704 }}>0&deg;</BlueText>
 
-        <Symbol name="vertical-valve-hp.svg" style={{ left: 910, top: 416, width: 44, height: 44 }} />
+        <ValveAssembly x={908} y={416} orientation="vertical" actuator="handwheel" size={44} />
         <Symbol name="vertical-inline-flow-meter.svg" style={{ left: 955, top: 378, width: 33, height: 95 }} />
         <BlueText style={{ left: 986, top: 437 }}>2300 ppm</BlueText>
         <div className="damper" style={{ left: 979, top: 486 }} />
@@ -280,14 +294,14 @@ function App() {
         <div className="sensor-box" style={{ left: 982, top: 486 }} />
 
         <ScaleBox style={{ left: 1030, top: 575 }} />
-        <Symbol name="vertical-valve-hp.svg" style={{ left: 946, top: 665, width: 33, height: 33 }} />
-        <Symbol name="horizontal-valve-hp.svg" style={{ left: 515, top: 790, width: 40, height: 40 }} />
-        <Symbol name="horizontal-valve-hp.svg" style={{ left: 572, top: 790, width: 40, height: 40 }} />
-        <Symbol name="horizontal-valve-hp.svg" style={{ left: 763, top: 790, width: 40, height: 40 }} />
+        <ValveAssembly x={946} y={665} orientation="vertical" actuator="semicircle" size={33} />
+        <ValveAssembly x={515} y={790} actuator="square" />
+        <ValveAssembly x={572} y={790} actuator="square" />
+        <ValveAssembly x={763} y={790} actuator="semicircle" />
         <ValveCluster style={{ left: 625, top: 895 }} />
         <Sensor label="P" style={{ left: 696, top: 895 }} />
         <BlueText style={{ left: 636, top: 848 }}>20.2 &quot; WG</BlueText>
-        <Symbol name="vertical-valve-hp.svg" style={{ left: 765, top: 852, width: 39, height: 39 }} />
+        <ValveAssembly x={765} y={852} orientation="vertical" actuator="arrow" size={39} />
 
         <div className="burner-gun" />
         <div className="pilot">
@@ -308,21 +322,18 @@ function App() {
           <p>Modulating - Firing</p>
         </div>
 
-        <Symbol name="vertical-valve-hp.svg" style={{ left: 367, top: 250, width: 34, height: 34 }} />
-        <Symbol name="vertical-valve-hp.svg" style={{ left: 367, top: 285, width: 34, height: 34 }} />
-        <Symbol name="vertical-valve-hp.svg" style={{ left: 367, top: 320, width: 34, height: 34 }} />
-        <Pipe x={371} y={250} w={288} vertical color="#7d7df6" />
-        <Marker style={{ left: 384, top: 254 }} />
-        <Marker style={{ left: 384, top: 288 }} />
-        <Marker style={{ left: 384, top: 322 }} />
-        <Marker style={{ left: 436, top: 774 }} />
-        <Marker style={{ left: 436, top: 802 }} />
-        <Marker style={{ left: 535, top: 797 }} />
-        <Marker style={{ left: 584, top: 797 }} />
-        <Marker style={{ left: 773, top: 797 }} />
-        <Marker style={{ left: 649, top: 898 }} />
-        <Marker style={{ left: 837, top: 898 }} />
-        <Marker style={{ left: 917, top: 898 }} />
+        <ValveAssembly x={367} y={250} orientation="vertical" actuator="square" size={34} />
+        <ValveAssembly x={367} y={285} orientation="vertical" actuator="square" size={34} />
+        <ValveAssembly x={367} y={320} orientation="vertical" actuator="triangle" size={34} />
+        <Pipe x={371} y={250} w={288} h={3} vertical color="#7d7df6" className="instrument-pipe" />
+        <ValveAssembly x={431} y={769} orientation="vertical" actuator="square" size={34} />
+        <ValveAssembly x={431} y={797} orientation="vertical" actuator="square" size={34} />
+        <ValveAssembly x={528} y={792} actuator="square" size={34} />
+        <ValveAssembly x={579} y={792} actuator="square" size={34} />
+        <ValveAssembly x={766} y={792} actuator="semicircle" size={34} />
+        <ValveAssembly x={642} y={893} actuator="square" size={34} />
+        <ValveAssembly x={831} y={893} actuator="square" size={34} />
+        <ValveAssembly x={911} y={893} actuator="semicircle" size={34} />
         <div className="sensor-box" style={{ left: 389, top: 308 }} />
         <BlueText style={{ left: 390, top: 831 }}>28&deg;</BlueText>
         <div className="sensor-box" style={{ left: 395, top: 846 }} />
