@@ -53,9 +53,10 @@ button {
   border: 1px solid #8e939d;
   border-radius: 2px;
   background:
+    linear-gradient(180deg, rgba(255, 255, 255, .45), transparent 45%, rgba(0, 0, 0, .2)),
     linear-gradient(12deg, transparent 0 64%, rgba(255, 255, 255, .22) 65% 69%, transparent 70%),
     linear-gradient(9deg, #f31422 0 52%, #048fd3 53% 100%);
-  box-shadow: 2px 2px 0 rgba(30, 30, 30, .18);
+  box-shadow: inset 0 2px 1px rgba(255, 255, 255, .45), inset 0 -3px 4px rgba(0, 0, 0, .25), 2px 2px 0 rgba(30, 30, 30, .22);
   font-size: 17px;
   font-weight: 700;
   text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
@@ -141,32 +142,55 @@ button {
 }
 
 .pipe {
+  --pipe-color: #f4f6f6;
   position: absolute;
-  z-index: 1;
-  border: 2px solid #5b5b5b;
-  background: #f4f6f6;
+  z-index: 4;
+  border: 1px solid #6b6b6b;
+  border-radius: 9px;
+  background: var(--pipe-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .4), inset 0 0 0 1px rgba(255, 255, 255, .55);
 }
 
 .pipe::before {
   content: '';
   position: absolute;
-  inset: 2px;
-  background: rgba(195, 210, 255, .28);
+  pointer-events: none;
+  border-radius: inherit;
+  inset: 0;
+}
+
+.pipe-horizontal::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .92) 0 14%, rgba(255, 255, 255, .35) 18% 28%, rgba(0, 0, 0, .2) 48% 58%, rgba(255, 255, 255, .55) 70% 78%, rgba(0, 0, 0, .22) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, .15), transparent 6%, transparent 94%, rgba(0, 0, 0, .18));
+  mix-blend-mode: multiply;
+}
+
+.pipe-vertical::before {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, .92) 0 13%, rgba(255, 255, 255, .35) 18% 28%, rgba(0, 0, 0, .2) 48% 58%, rgba(255, 255, 255, .55) 70% 78%, rgba(0, 0, 0, .22) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, .15), transparent 6%, transparent 94%, rgba(0, 0, 0, .18));
+  mix-blend-mode: multiply;
 }
 
 .hot-pipe {
-  border-color: #9d1a1a;
+  border-color: #8c1616;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(255, 220, 220, .6);
 }
 
 .air-duct {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .86), rgba(255, 255, 255, .2) 28%, rgba(25, 25, 25, .22) 55%, rgba(255, 255, 255, .45) 74%, rgba(0, 0, 0, .28)),
+    #eef2f1;
+  box-shadow: inset 0 2px 3px rgba(255, 255, 255, .85), inset 0 -3px 5px rgba(0, 0, 0, .28), 1px 2px 3px rgba(0, 0, 0, .35);
 }
 
 .supply-duct {
-  border-top: 3px solid #3d3d3d;
-  border-bottom: 3px solid #3d3d3d;
+  border: 1px solid #606060;
 }
 
 .supply-duct::before {
@@ -176,13 +200,15 @@ button {
   top: -3px;
   width: 32px;
   height: 52px;
-  border-top: 3px solid #3d3d3d;
-  border-left: 3px solid #3d3d3d;
+  border-top: 3px solid #505050;
+  border-left: 3px solid #505050;
   border-top-left-radius: 26px;
+  box-shadow: inset 2px 2px 2px rgba(255, 255, 255, .75);
 }
 
 .left-return-duct {
-  border-top: 3px solid #4a4a4a;
+  border: 1px solid #606060;
+  border-bottom: 0;
 }
 
 .left-return-duct::before {
@@ -192,8 +218,8 @@ button {
   top: -4px;
   width: 164px;
   height: 48px;
-  border-top: 3px solid #4a4a4a;
-  border-left: 3px solid #4a4a4a;
+  border-top: 3px solid #505050;
+  border-left: 3px solid #505050;
   border-top-left-radius: 54px;
 }
 
@@ -204,13 +230,17 @@ button {
   top: -2px;
   width: 22px;
   height: 34px;
-  border-right: 3px solid #4a4a4a;
+  border-right: 3px solid #505050;
   transform: skewX(-24deg);
 }
 
 .stack-duct {
-  border-left: 3px solid #4a4a4a;
-  border-top: 3px solid #4a4a4a;
+  border-left: 1px solid #606060;
+  border-top: 1px solid #606060;
+  border-radius: 12px 0 0 12px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, .9), rgba(255, 255, 255, .28) 27%, rgba(0, 0, 0, .24) 57%, rgba(255, 255, 255, .45) 78%, rgba(0, 0, 0, .18)),
+    #eef2f1;
 }
 
 .stack-duct::after {
@@ -220,7 +250,7 @@ button {
   bottom: 6px;
   width: 78px;
   height: 45px;
-  border-top: 3px solid #4a4a4a;
+  border-top: 3px solid #505050;
   transform: skewX(-36deg);
 }
 
@@ -295,8 +325,9 @@ button {
   border: 3px solid #5c5c5c;
   background:
     linear-gradient(90deg, transparent 48%, #777 48% 53%, transparent 53%),
+    linear-gradient(135deg, rgba(255, 255, 255, .85), rgba(255, 255, 255, .18) 38%, rgba(0, 0, 0, .2) 100%),
     #d9e0e3;
-  box-shadow: inset 0 0 0 1px #f7fafa;
+  box-shadow: inset 2px 2px 2px rgba(255, 255, 255, .7), inset -2px -2px 3px rgba(0, 0, 0, .22), 1px 2px 2px rgba(0, 0, 0, .32);
 }
 
 .sensor-box {
@@ -305,8 +336,10 @@ button {
   width: 44px;
   height: 40px;
   border: 3px solid #555;
-  background: #dfe5e5;
-  box-shadow: inset -8px 0 0 #c4caca, inset 0 0 0 1px #f8ffff;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, .25) 48%, rgba(0, 0, 0, .18)),
+    #dfe5e5;
+  box-shadow: inset -8px 0 0 rgba(120, 130, 130, .34), inset 2px 2px 2px rgba(255, 255, 255, .75), inset -2px -2px 3px rgba(0, 0, 0, .18), 1px 2px 2px rgba(0, 0, 0, .28);
 }
 
 .vsd-box {
@@ -315,8 +348,10 @@ button {
   width: 60px;
   height: 60px;
   border: 3px solid #555;
-  background: #c9d3d8;
-  box-shadow: inset 0 0 0 3px #aeb9c0, 1px 1px 0 #f6ffff;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .88), rgba(255, 255, 255, .25) 38%, rgba(0, 0, 0, .2) 100%),
+    #c9d3d8;
+  box-shadow: inset 0 0 0 3px #aeb9c0, inset 3px 3px 4px rgba(255, 255, 255, .65), inset -3px -4px 5px rgba(0, 0, 0, .25), 2px 2px 3px rgba(0, 0, 0, .32);
 }
 
 .vsd-box::before {
@@ -327,7 +362,10 @@ button {
   width: 40px;
   height: 23px;
   border: 3px solid #76828c;
-  background: #dfe8ea;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .82), rgba(0, 0, 0, .16)),
+    #dfe8ea;
+  box-shadow: inset 2px 2px 2px rgba(255, 255, 255, .65), inset -2px -2px 2px rgba(0, 0, 0, .22);
 }
 
 .vsd-box span {
@@ -346,8 +384,10 @@ button {
   width: 54px;
   height: 76px;
   border: 3px solid #555;
-  background: #d9e1e4;
-  box-shadow: inset 0 -12px 0 #b9c1c6;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .84), rgba(255, 255, 255, .2) 42%, rgba(0, 0, 0, .2)),
+    #d9e1e4;
+  box-shadow: inset 0 -12px 0 rgba(120, 130, 138, .4), inset 2px 2px 2px rgba(255, 255, 255, .7), inset -2px -2px 3px rgba(0, 0, 0, .22), 1px 2px 2px rgba(0, 0, 0, .28);
 }
 
 .scale-box::before {
@@ -387,8 +427,10 @@ button {
   width: 374px;
   height: 113px;
   border: 3px solid #7a7a82;
-  background: #ccd0ff;
-  box-shadow: inset 0 -12px 0 rgba(127, 139, 224, .22), inset 0 0 0 1px #f3f2ff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .2) 30%, rgba(80, 100, 190, .22) 64%, rgba(255, 255, 255, .28)),
+    #b8c7ff;
+  box-shadow: inset 0 -12px 0 rgba(80, 98, 175, .28), inset 2px 2px 3px rgba(255, 255, 255, .78), inset -2px -3px 5px rgba(0, 0, 0, .26), 2px 3px 4px rgba(0, 0, 0, .28);
 }
 
 .furnace-top::before {
@@ -400,7 +442,9 @@ button {
   height: 35px;
   border: 3px solid #7a7a82;
   border-top: 0;
-  background: repeating-linear-gradient(0deg, #ced0f9 0 5px, #786d93 6px 9px, #eef0ff 10px 16px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .8), rgba(0, 0, 0, .18)),
+    repeating-linear-gradient(0deg, #ced0f9 0 5px, #786d93 6px 9px, #eef0ff 10px 16px);
 }
 
 .furnace-top span {
@@ -409,7 +453,8 @@ button {
   height: 10px;
   border-radius: 50%;
   border: 2px solid #8f8f94;
-  background: #f2f4bd;
+  background:
+    radial-gradient(circle at 35% 30%, #ffffff 0 18%, #f2f4bd 22% 48%, #777 52% 64%, #d6d8a3 68%);
 }
 
 .stack {
@@ -417,7 +462,10 @@ button {
   bottom: 0;
   width: 11px;
   border: 3px solid #777;
-  background: #e9efef;
+  background:
+    linear-gradient(90deg, #fff, #dde5e5 35%, #828888 55%, #f6fbfb 78%, #b6bcbc),
+    #e9efef;
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, .28);
 }
 
 .stack-a {
@@ -442,7 +490,10 @@ button {
   width: 63px;
   height: 63px;
   border: 3px solid #74737b;
-  background: #cdd1dc;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, .18) 42%, rgba(0, 0, 0, .22)),
+    #cdd1dc;
+  box-shadow: inset 2px 2px 2px rgba(255, 255, 255, .66), inset -2px -2px 3px rgba(0, 0, 0, .22);
 }
 
 .electrodes i {
@@ -451,7 +502,9 @@ button {
   width: 11px;
   height: 74px;
   border: 3px solid #6e6e76;
-  background: #f0f6f6;
+  background:
+    linear-gradient(90deg, #fff, #dce5e5 32%, #7d8585 56%, #f7ffff 78%, #aeb8b8),
+    #f0f6f6;
 }
 
 .electrodes i:nth-child(1) {
@@ -472,7 +525,10 @@ button {
   right: 72px;
   height: 8px;
   border: 2px solid #777;
-  background: #f5f5fb;
+  background:
+    linear-gradient(180deg, #fff, #a9a9c6 44%, #2a2a37 54%, #f0f1ff 78%, #717186),
+    #f5f5fb;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .35);
 }
 
 .tube-1 {
@@ -495,8 +551,10 @@ button {
   height: 112px;
   border: 3px solid #7a7a82;
   border-top: 0;
-  background: #fff;
-  box-shadow: inset 0 0 0 1px #f3f3f3;
+  background:
+    linear-gradient(180deg, #ffffff, #ffffff 55%, #eef0f2),
+    #fff;
+  box-shadow: inset 2px 2px 3px rgba(255, 255, 255, .75), inset -2px -2px 4px rgba(0, 0, 0, .18), 2px 2px 4px rgba(0, 0, 0, .2);
 }
 
 .combustion::after {
@@ -508,7 +566,9 @@ button {
   height: 150px;
   border: 3px solid #7a7a82;
   border-left: 0;
-  background: #cfd0ff;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, .74), rgba(120, 130, 210, .22), rgba(0, 0, 0, .2)),
+    #cfd0ff;
 }
 
 .flame {
@@ -528,8 +588,11 @@ button {
   width: 86px;
   height: 34px;
   border: 3px solid #666;
-  background: #f1f6f6;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .88), rgba(255, 255, 255, .25) 45%, rgba(0, 0, 0, .22)),
+    #f1f6f6;
   transform: rotate(-27deg);
+  box-shadow: inset 2px 2px 2px rgba(255, 255, 255, .65), inset -2px -2px 3px rgba(0, 0, 0, .24), 1px 2px 3px rgba(0, 0, 0, .25);
 }
 
 .burner-gun::after {

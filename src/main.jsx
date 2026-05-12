@@ -41,13 +41,13 @@ function InfoPanel({ title, rows, style }) {
 function Pipe({ x, y, w, h = 5, color = '#f4f6f6', vertical = false, className = '' }) {
   return (
     <div
-      className={`pipe ${className}`}
+      className={`pipe ${vertical ? 'pipe-vertical' : 'pipe-horizontal'} ${className}`}
       style={{
         left: x,
         top: y,
         width: vertical ? h : w,
         height: vertical ? w : h,
-        background: color
+        '--pipe-color': color
       }}
     />
   );
