@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
-const asset = (name) => `/${name}`;
+const asset = (name) => `${import.meta.env.BASE_URL}${name}`;
 
 function Symbol({ name, className = '', style, alt = '' }) {
   return <img className={`symbol ${className}`} style={style} src={asset(name)} alt={alt} />;
