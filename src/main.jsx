@@ -81,11 +81,7 @@ function ScaleBox({ style }) {
 function FanGlyph({ className = '', style }) {
   return (
     <div className={`fan-glyph ${className}`} style={style}>
-      <div className="fan-blade blade-1" />
-      <div className="fan-blade blade-2" />
-      <div className="fan-blade blade-3" />
-      <div className="fan-blade blade-4" />
-      <div className="fan-hub" />
+      <img className="fan-rotor" src={asset('fan-blade.svg')} alt="" aria-hidden="true" />
     </div>
   );
 }
