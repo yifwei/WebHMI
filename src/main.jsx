@@ -53,6 +53,18 @@ function Pipe({ x, y, w, h = 5, color = '#f4f6f6', vertical = false, className =
   );
 }
 
+function AirDuct({ className = '', style }) {
+  return <div className={`air-duct ${className}`} style={style} />;
+}
+
+function Marker({ style, className = '' }) {
+  return <span className={`marker ${className}`} style={style} />;
+}
+
+function PipeTick({ style, vertical = false }) {
+  return <span className={`pipe-tick ${vertical ? 'pipe-tick-vertical' : ''}`} style={style} />;
+}
+
 function Sensor({ label, style }) {
   return (
     <div className="sensor" style={style}>
@@ -155,8 +167,21 @@ function ValveCluster({ style }) {
 }
 
 function App() {
+  const [scale, setScale] = React.useState(1);
+
+  React.useEffect(() => {
+    const fitScreen = () => {
+      const nextScale = Math.min(1, (window.innerWidth - 18) / 1240, (window.innerHeight - 60) / 930);
+      setScale(Number.isFinite(nextScale) ? nextScale : 1);
+    };
+
+    fitScreen();
+    window.addEventListener('resize', fitScreen);
+    return () => window.removeEventListener('resize', fitScreen);
+  }, []);
+
   return (
-    <main className="page">
+    <main className="page" style={{ '--hmi-scale': scale, height: 930 * scale + 68 }}>
       <section className="hmi-screen" aria-label="Industrial burner SCADA home screen recreation">
         <Button style={{ left: 16, top: 17 }}>Configure</Button>
         <Button style={{ left: 160, top: 17 }}>Faults</Button>
@@ -186,6 +211,10 @@ function App() {
           ]}
         />
 
+        <AirDuct className="supply-duct" style={{ left: 246, top: 198, width: 622, height: 36 }} />
+        <AirDuct className="left-return-duct" style={{ left: 61, top: 531, width: 370, height: 64 }} />
+        <AirDuct className="stack-duct" style={{ left: 914, top: 247, width: 150, height: 250 }} />
+
         <Pipe x={250} y={196} w={607} />
         <Pipe x={274} y={230} w={586} />
         <Pipe x={250} y={196} w={40} vertical />
@@ -205,6 +234,12 @@ function App() {
         <Pipe x={453} y={550} w={306} vertical color="#d51916" className="hot-pipe" />
         <Pipe x={101} y={914} w={355} color="#d51916" className="hot-pipe" />
         <Pipe x={477} y={914} w={481} color="#eff967" />
+        <PipeTick style={{ left: 640, top: 810 }} />
+        <PipeTick style={{ left: 735, top: 810 }} />
+        <PipeTick style={{ left: 549, top: 916 }} />
+        <PipeTick style={{ left: 646, top: 916 }} />
+        <PipeTick style={{ left: 827, top: 916 }} />
+        <PipeTick style={{ left: 919, top: 916 }} />
 
         <FanGlyph style={{ left: 863, top: 65, width: 58, height: 58 }} />
         <FanGlyph style={{ left: 237, top: 240, width: 43, height: 43 }} />
@@ -277,6 +312,17 @@ function App() {
         <Symbol name="vertical-valve-hp.svg" style={{ left: 367, top: 285, width: 34, height: 34 }} />
         <Symbol name="vertical-valve-hp.svg" style={{ left: 367, top: 320, width: 34, height: 34 }} />
         <Pipe x={371} y={250} w={288} vertical color="#7d7df6" />
+        <Marker style={{ left: 384, top: 254 }} />
+        <Marker style={{ left: 384, top: 288 }} />
+        <Marker style={{ left: 384, top: 322 }} />
+        <Marker style={{ left: 436, top: 774 }} />
+        <Marker style={{ left: 436, top: 802 }} />
+        <Marker style={{ left: 535, top: 797 }} />
+        <Marker style={{ left: 584, top: 797 }} />
+        <Marker style={{ left: 773, top: 797 }} />
+        <Marker style={{ left: 649, top: 898 }} />
+        <Marker style={{ left: 837, top: 898 }} />
+        <Marker style={{ left: 917, top: 898 }} />
         <div className="sensor-box" style={{ left: 389, top: 308 }} />
         <BlueText style={{ left: 390, top: 831 }}>28&deg;</BlueText>
         <div className="sensor-box" style={{ left: 395, top: 846 }} />
